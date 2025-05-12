@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+:root {
+  --lilwhite: #e0dddd;
+  --lilgray: #161616;
+}
