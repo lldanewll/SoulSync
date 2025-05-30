@@ -4,3 +4,8 @@
   --lilwhite: #e0dddd;
   --lilgray: #161616;
 }
+
+.light {
+  --lilwhite: #161616;
+  --lilgray: #e0dddd;
+}

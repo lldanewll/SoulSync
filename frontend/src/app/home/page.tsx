@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useTheme } from '@/components/ThemeProvider';
 
 const HomePage = () => {
   const [typedText, setTypedText] = useState("");
@@ -11,6 +12,7 @@ const HomePage = () => {
   const fullText = "Музыкальный плеер потоковой музыки от Новикова Даниила ЭФБО-03-23";
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   const artists = [  // Примерный массив данных для карусели
     { name: 'Исполнитель 1', image: '/logo.jpg' },
@@ -31,7 +33,7 @@ const HomePage = () => {
       }, 60);
       return () => clearTimeout(timeout);
     }
-  }, [typedText, fullText]);
+  }, [typedText, fullText, isDrawerOpen]);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -56,7 +58,7 @@ const HomePage = () => {
   };
 
   return (
-    <div className="bg-[var(--lilgray)] min-h-screen flex flex-col items-center justify-center overflow-auto">
+    <div className={`min-h-screen flex flex-col items-center justify-center overflow-auto ${theme === 'dark' ? 'bg-[var(--lilgray)]' : 'bg-gray-100 text-black'}`}>
       <header className="w-full p-4 flex justify-between items-center bg-black shadow-2xl sticky top-0 z-10">
         <div className="text-red-500 text-2xl">SS</div>
         <input
@@ -85,13 +87,21 @@ const HomePage = () => {
                 alt="👤"
                 className="w-16 h-16 rounded-full object-cover mb-4"
               />
-              <p className="text-[var(--lilwhite)] text-center mt-2">{username}</p>
+              <p className={`text-center mt-2 ${theme === 'dark' ? 'text-[var(--lilwhite)]' : 'text-white'}`}>
+                {username}
+              </p>
             </div>
-            <button onClick={() => router.push('/profile')} className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">
-              Мой профиль
-            </button>
-            <button className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">Лайки</button>
-            <button className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-6 text-[var(--lilwhite)] hover:bg-gray-700">Настройки</button>
+            <button onClick={() => router.push('/profile')} className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">Мой профиль</button>
+            <button onClick={() => router.push('/likes')} className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">Лайки</button>
+            <div className="flex items-center justify-between px-4 py-2 mb-6 bg-[var(--lilgray)] rounded-xl text-[var(--lilwhite)]">
+              <span>Тема</span>
+              <button
+                onClick={toggleTheme}
+                className={`w-12 h-6 rounded-full flex items-center transition-colors duration-300 focus:outline-none overflow-hidden relative ${theme === 'dark' ? 'bg-red-500' : 'bg-gray-300'}`}
+              >
+                <span className={`w-5 h-5 rounded-full transition-transform duration-300 absolute ${theme === 'dark' ? 'bg-white right-[2px]' : 'bg-black left-[2px]'}`}></span>
+              </button>
+            </div>
             <button className="bg-red-500 px-4 py-2 rounded-xl text-[var(--lilwhite)] hover:bg-red-600" onClick={handleLogout}>
               Выйти
             </button>
@@ -112,20 +122,20 @@ const HomePage = () => {
         <h2 className="text-[var(--lilwhite)] text-3xl font-bold mb-8 text-center">Популярные исполнители</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 w-full justify-items-center">
           {artists.map((artist, index) => (
-            <div key={index} className="flex-shrink-0 w-full max-w-xs bg-black p-6 rounded-xl shadow-md flex flex-col items-center">
+            <div key={index} className={`flex-shrink-0 w-full max-w-xs p-6 rounded-xl shadow-md flex flex-col items-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
               <img
                 src={artist.image}
                 alt={artist.name}
                 className="w-40 h-40 rounded-full object-cover mb-4"
               />
-              <p className="text-[var(--lilwhite)] text-center text-xl">
+              <p className={`text-center text-xl ${theme === 'dark' ? 'text-[var(--lilwhite)]' : 'text-black'}`}>
                 {artist.name}
               </p>
             </div>
           ))}
         </div>
       </main>
-      <footer className="w-full text-center py-4 text-[var(--lilwhite)] bg-black opacity-80">
+      <footer className={`w-full text-center py-4 opacity-80 ${theme === 'dark' ? 'bg-black text-[var(--lilwhite)]' : 'bg-gray-200 text-black'}`}>
         <a
           href="https://github.com/lldanewll/SoulSync"
           className="flex items-center justify-center gap-2 text-[var(--lilwhite)]"
