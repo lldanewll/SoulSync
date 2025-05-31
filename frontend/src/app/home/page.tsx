@@ -3,7 +3,10 @@ import React, { useEffect, useState, useRef } from 'react';
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from '@/components/ThemeProvider';
+import { MusicPlayerProvider } from '@/context/MusicPlayerContext';
 import SoundCloudPlayer from '@/components/SoundCloudPlayer';
+import FlowButton from '@/components/FlowButton';
+import FloatingPlayer from '@/components/FloatingPlayer';
 
 // Данные о треках SoundCloud
 const tracks = [
@@ -59,6 +62,16 @@ const tracks = [
   },
 ];
 
+// Основной компонент страницы, обернутый в провайдер музыкального плеера
+export default function Home() {
+  return (
+    <MusicPlayerProvider>
+      <HomePage />
+    </MusicPlayerProvider>
+  );
+}
+
+// Компонент домашней страницы
 const HomePage = () => {
   const [typedText, setTypedText] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -67,20 +80,24 @@ const HomePage = () => {
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
+  const { setTracks } = useMusicPlayer();
 
   // Загружаем имя пользователя из localStorage после инициализации компонента
   useEffect(() => {
     setUsername(localStorage.getItem('username') || "Гость");
-  }, []);
+    
+    // Устанавливаем треки в контекст плеера
+    setTracks(tracks);
+  }, [setTracks]);
 
-  useEffect(() => {
-    if (typedText.length < fullText.length) {
-      const timeout = setTimeout(() => {
-        setTypedText(fullText.slice(0, typedText.length + 1));
-      }, 60);
-      return () => clearTimeout(timeout);
-    }
-  }, [typedText, fullText, isDrawerOpen]);
+  // useEffect(() => {
+  //   if (typedText.length < fullText.length) {
+  //     const timeout = setTimeout(() => {
+  //       setTypedText(fullText.slice(0, typedText.length + 1));
+  //     }, 60);
+  //     return () => clearTimeout(timeout);
+  //   }
+  // }, [typedText, fullText, isDrawerOpen]);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -158,14 +175,20 @@ const HomePage = () => {
       <main className="flex-grow flex flex-col items-center p-6 w-full max-w-[1400px] mx-auto">
         <h1 className="text-[var(--lilwhite)] text-2xl md:text-3xl font-bold mb-8 text-center">{typedText}</h1>
         
+        {/* Кнопка "Войти в поток" */}
+        <FlowButton />
+        
         <h2 className="text-[var(--lilwhite)] text-xl md:text-2xl font-bold mb-6 self-start">Популярные треки</h2>
         
-        {/* Встраиваем компонент SoundCloud плеера */}
-        <SoundCloudPlayer tracks={tracks} />
+        {/* Компонент с карточками треков */}
+        <SoundCloudPlayer />
+        
+        {/* Плавающий плеер */}
+        <FloatingPlayer />
       </main>
       <footer className={`w-full text-center py-4 opacity-80 ${theme === 'dark' ? 'bg-black text-[var(--lilwhite)]' : 'bg-gray-200 text-black'}`}>
         <a
-          href="https://github.com/lldanewll/SoulSync"
+          href="https://github.com/lldanewll/SoulSync/tree/master"
           className="flex items-center justify-center gap-2 text-[var(--lilwhite)]"
           target="_blank"
           rel="noopener noreferrer"
@@ -178,4 +201,8 @@ const HomePage = () => {
   );
 };
 
-export default HomePage; 
+// Функция для импорта useMusicPlayer внутри компонента
+function useMusicPlayer() {
+  const { useMusicPlayer } = require('@/context/MusicPlayerContext');
+  return useMusicPlayer();
+} 

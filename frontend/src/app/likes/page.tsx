@@ -130,7 +130,7 @@ const LikesPage = () => {
 
       <footer className="w-full text-center py-4 text-[var(--lilwhite)] bg-black opacity-80">
         <a
-          href="https://github.com/lldanewll/SoulSync"
+          href="https://github.com/lldanewll/SoulSync/tree/master"
           className="flex items-center justify-center gap-2 text-[var(--lilwhite)]"
           target="_blank"
           rel="noopener noreferrer"

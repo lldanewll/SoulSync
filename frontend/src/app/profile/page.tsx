@@ -95,7 +95,7 @@ const ProfilePage = () => {
       {/* Footer */}
       <footer className={`w-full text-center py-4 opacity-80 ${theme === 'dark' ? 'bg-black text-[var(--lilwhite)]' : 'bg-gray-200 text-black'}`}>
         <a
-          href="https://github.com/lldanewll/SoulSync"
+          href="https://github.com/lldanewll/SoulSync/tree/master"
           className="flex items-center justify-center gap-2 text-[var(--lilwhite)]"
           target="_blank"
           rel="noopener noreferrer"
