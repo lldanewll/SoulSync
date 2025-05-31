@@ -3,28 +3,75 @@ import React, { useEffect, useState, useRef } from 'react';
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useTheme } from '@/components/ThemeProvider';
+import SoundCloudPlayer from '@/components/SoundCloudPlayer';
+
+// Данные о треках SoundCloud
+const tracks = [
+  {
+    url: 'https://soundcloud.com/g59/self-inflicted',
+    title: '$uicideboy$ - Self Inflicted',
+    artist: '$uicideboy$'
+  },
+  {
+    url: 'https://soundcloud.com/djzrx/taku-hardstyle',
+    title: 'Taku Hardstyle',
+    artist: 'DJZRX'
+  },
+  {
+    url: 'https://soundcloud.com/playboicarti/evil-j0rdan',
+    title: 'Evil J0rdan',
+    artist: 'Playboi Carti'
+  },
+  {
+    url: 'https://soundcloud.com/liu-aibi/angel-yamu',
+    title: 'Angel Yamu',
+    artist: 'Liu Aibi'
+  },
+  {
+    url: 'https://soundcloud.com/user-422114367/whos-ready-for-tomorrow',
+    title: 'Who\'s Ready For Tomorrow',
+    artist: 'User-422114367'
+  },
+  {
+    url: 'https://soundcloud.com/dm17r11/shit-grey-1',
+    title: 'Джин Грей',
+    artist: 'dm17r11'
+  },
+  {
+    url: "https://soundcloud.com/ramirez_187/grey-gods-feat-uicideboy-prodby-tacet",
+    title: "Grey Gods (Feat $uicideboy$) [Prod.By Tacet]",
+    artist: "RAMIREZ"
+  },
+  {
+    url: "https://soundcloud.com/burgosmusic/burgos-i-like-produced-by-bergotti",
+    title: "BURGOS - I LIKE PRODUCED BY BERGOTTI",
+    artist: "Burgos Music"
+  },
+  {
+    url: "https://soundcloud.com/lildurt96/goodnight",
+    title: "Goodnight (Prod. Razegod)",
+    artist: "⚬ RAZEGOD ✝︎"
+  },
+  {
+    url: "https://soundcloud.com/goida_mode/ay-yay-yay-hardstyle-remix",
+    title: "Ай-Яй-Яй hardstyle remix",
+    artist: "ᅠ"
+  },
+];
 
 const HomePage = () => {
   const [typedText, setTypedText] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [username, setUsername] = useState(localStorage.getItem('username') || "Гость");
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [username, setUsername] = useState("");
   const fullText = "Музыкальный плеер потоковой музыки от Новикова Даниила ЭФБО-03-23";
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
 
-  const artists = [  // Примерный массив данных для карусели
-    { name: 'Исполнитель 1', image: '/logo.jpg' },
-    { name: 'Исполнитель 2', image: '/logo.jpg' },
-    { name: 'Исполнитель 4', image: '/logo.jpg' },
-    { name: 'Исполнитель 5', image: '/logo.jpg' },
-    { name: 'Исполнитель 6', image: '/logo.jpg' },
-    { name: 'Исполнитель 7', image: '/logo.jpg' },
-    { name: 'Исполнитель 8', image: '/logo.jpg' },
-    { name: 'Исполнитель 9', image: '/logo.jpg' },
-
-  ];
+  // Загружаем имя пользователя из localStorage после инициализации компонента
+  useEffect(() => {
+    setUsername(localStorage.getItem('username') || "Гость");
+  }, []);
 
   useEffect(() => {
     if (typedText.length < fullText.length) {
@@ -108,32 +155,13 @@ const HomePage = () => {
           </div>
         </div>
       )}
-      <main className="flex-grow flex flex-col items-center justify-center p-6 w-full">
-        <button
-          onClick={() => setIsPlaying(!isPlaying)}
-          className="w-64 h-64 md:w-96 md:h-96 xl:w-128 xl:h-128 rounded-full bg-red-500 mb-8 flex items-center justify-center shadow-lg flex-col"
-        >
-          {isPlaying ? (
-            <span className="text-[var(--lilwhite)] text-4xl mb-4">▶Включить подборку</span>
-          ) : (
-            <span className="text-[var(--lilwhite)] text-4xl mb-4">⏸Включить подборку</span>
-          )}
-        </button>
-        <h2 className="text-[var(--lilwhite)] text-3xl font-bold mb-8 text-center">Популярные исполнители</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 w-full justify-items-center">
-          {artists.map((artist, index) => (
-            <div key={index} className={`flex-shrink-0 w-full max-w-xs p-6 rounded-xl shadow-md flex flex-col items-center ${theme === 'dark' ? 'bg-black' : 'bg-white'}`}>
-              <img
-                src={artist.image}
-                alt={artist.name}
-                className="w-40 h-40 rounded-full object-cover mb-4"
-              />
-              <p className={`text-center text-xl ${theme === 'dark' ? 'text-[var(--lilwhite)]' : 'text-black'}`}>
-                {artist.name}
-              </p>
-            </div>
-          ))}
-        </div>
+      <main className="flex-grow flex flex-col items-center p-6 w-full max-w-[1400px] mx-auto">
+        <h1 className="text-[var(--lilwhite)] text-2xl md:text-3xl font-bold mb-8 text-center">{typedText}</h1>
+        
+        <h2 className="text-[var(--lilwhite)] text-xl md:text-2xl font-bold mb-6 self-start">Популярные треки</h2>
+        
+        {/* Встраиваем компонент SoundCloud плеера */}
+        <SoundCloudPlayer tracks={tracks} />
       </main>
       <footer className={`w-full text-center py-4 opacity-80 ${theme === 'dark' ? 'bg-black text-[var(--lilwhite)]' : 'bg-gray-200 text-black'}`}>
         <a
