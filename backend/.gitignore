@@ -1,0 +1,58 @@
+# Виртуальное окружение Python
+venv/
+env/
+.venv/
+ENV/
+
+# Python кэш и компилированные файлы
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+
+# Файлы локальной конфигурации
+.env
+.env.local
+
+# Загруженные файлы и директории
+uploads/
+media/
+
+# IDE файлы
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Логи
+*.log
+logs/
+
+# Файлы миграции (при необходимости)
+alembic/versions/*
+!alembic/versions/__init__.py
+
+# Файлы базы данных
+*.sqlite
+*.db
+
+# Временные файлы
+tmp/
+.tmp/
+temp/
+
+# Файлы зависимостей
+.coverage
+htmlcov/
+coverage.xml
+
+# Файлы сборки
+dist/
+build/
+*.egg-info/
+
+# Специфичные для проекта папки
+tipa_bd/ 

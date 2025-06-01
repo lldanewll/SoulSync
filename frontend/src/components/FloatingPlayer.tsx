@@ -28,11 +28,6 @@ const FloatingPlayer: React.FC = () => {
   
   const progressRef = useRef<HTMLDivElement>(null);
   
-  // Добавляем эффект для отслеживания изменений прогресса
-//   useEffect(() => {
-//     console.log(`FloatingPlayer: прогресс изменился на ${progress.toFixed(2)}%`);
-//   }, [progress]);
-  
   if (!isPlayerVisible || currentTrackIndex === null || !tracks.length) {
     return null;
   }
