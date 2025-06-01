@@ -9,60 +9,6 @@ import FlowButton from '@/components/FlowButton';
 import FloatingPlayer from '@/components/FloatingPlayer';
 import { useAuth } from '@/context/AuthContext';
 
-// Данные о треках SoundCloud
-const tracks = [
-  {
-    url: 'https://soundcloud.com/g59/self-inflicted',
-    title: '$uicideboy$ - Self Inflicted',
-    artist: '$uicideboy$'
-  },
-  {
-    url: 'https://soundcloud.com/djzrx/taku-hardstyle',
-    title: 'Taku Hardstyle',
-    artist: 'DJZRX'
-  },
-  {
-    url: 'https://soundcloud.com/playboicarti/evil-j0rdan',
-    title: 'Evil J0rdan',
-    artist: 'Playboi Carti'
-  },
-  {
-    url: 'https://soundcloud.com/liu-aibi/angel-yamu',
-    title: 'Angel Yamu',
-    artist: 'Liu Aibi'
-  },
-  {
-    url: 'https://soundcloud.com/user-422114367/whos-ready-for-tomorrow',
-    title: 'Who\'s Ready For Tomorrow',
-    artist: 'User-422114367'
-  },
-  {
-    url: 'https://soundcloud.com/dm17r11/shit-grey-1',
-    title: 'Джин Грей',
-    artist: 'dm17r11'
-  },
-  {
-    url: "https://soundcloud.com/ramirez_187/grey-gods-feat-uicideboy-prodby-tacet",
-    title: "Grey Gods (Feat $uicideboy$) [Prod.By Tacet]",
-    artist: "RAMIREZ"
-  },
-  {
-    url: "https://soundcloud.com/burgosmusic/burgos-i-like-produced-by-bergotti",
-    title: "BURGOS - I LIKE PRODUCED BY BERGOTTI",
-    artist: "Burgos Music"
-  },
-  {
-    url: "https://soundcloud.com/lildurt96/goodnight",
-    title: "Goodnight (Prod. Razegod)",
-    artist: "⚬ RAZEGOD ✝︎"
-  },
-  {
-    url: "https://soundcloud.com/goida_mode/ay-yay-yay-hardstyle-remix",
-    title: "Ай-Яй-Яй hardstyle remix",
-    artist: "ᅠ"
-  },
-];
-
 // Основной компонент страницы, обернутый в провайдер музыкального плеера
 export default function Home() {
   return (
@@ -80,7 +26,6 @@ const HomePage = () => {
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
-  const { setTracks } = useMusicPlayer();
   const { user, logout, isAuthenticated } = useAuth();
 
   // Проверяем авторизацию при загрузке
@@ -89,12 +34,6 @@ const HomePage = () => {
       router.push('/');
     }
   }, [isAuthenticated, router]);
-
-  // Загружаем треки после инициализации компонента
-  useEffect(() => {
-    // Устанавливаем треки в контекст плеера
-    setTracks(tracks);
-  }, [setTracks]);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -174,8 +113,6 @@ const HomePage = () => {
         
         {/* Кнопка "Войти в поток" */}
         <FlowButton />
-        
-        <h2 className="text-[var(--lilwhite)] text-xl md:text-2xl font-bold mb-6 self-start">Популярные треки</h2>
         
         {/* Компонент с карточками треков */}
         <SoundCloudPlayer />

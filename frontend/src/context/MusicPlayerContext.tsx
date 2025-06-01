@@ -1,11 +1,14 @@
 "use client";
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { Track as ApiTrack, TrackService } from '@/services/tracks';
 
 // Интерфейс для описания трека
 export interface Track {
+  id?: string;
   url: string;
   title: string;
   artist: string;
+  artwork_url?: string | null;
   artwork?: string;
 }
 
@@ -26,6 +29,7 @@ interface MusicPlayerContextProps {
   trackDurations: string[];
   trackLoading: boolean[];
   playingStates: boolean[];
+  loading: boolean;
   
   // Методы
   playTrack: (index: number) => void;
@@ -50,6 +54,7 @@ interface MusicPlayerContextProps {
   setTracks: (tracks: Track[]) => void;
   formatTime: (milliseconds: number) => string;
   getDefaultArtwork: (index: number) => string;
+  fetchRandomTracks: (limit?: number) => Promise<void>;
 }
 
 // Создаем контекст
@@ -116,6 +121,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [artwork, setArtwork] = useState('');
   const [isInFlowMode, setIsInFlowMode] = useState(false);
   const [flowHistory, setFlowHistory] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
   
   // Кэшированные данные
   const [trackArtworks, setTrackArtworks] = useState<string[]>([]);
@@ -156,10 +162,20 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, []);
   
+  // Загрузка случайных треков при монтировании компонента
+  useEffect(() => {
+    if (apiLoaded && tracks.length === 0) {
+      fetchRandomTracks();
+    }
+  }, [apiLoaded]);
+  
   // Обновление состояний при изменении треков
   useEffect(() => {
     if (tracks.length > 0) {
-      setTrackArtworks(tracks.map((track, i) => track.artwork || getDefaultArtwork(i)));
+      setTrackArtworks(tracks.map((track, i) => {
+        // Используем artwork_url из API если есть, иначе генерируем на основе URL
+        return track.artwork_url || track.artwork || getDefaultArtwork(i);
+      }));
       setTrackDurations(new Array(tracks.length).fill('0:00'));
       setTrackLoading(new Array(tracks.length).fill(false));
       setPlayingStates(new Array(tracks.length).fill(false));
@@ -170,6 +186,43 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     }
   }, [tracks, apiLoaded]);
+  
+  // Функция для загрузки случайных треков с сервера
+  const fetchRandomTracks = async (limit: number = 20) => {
+    try {
+      setLoading(true);
+      const randomTracks = await TrackService.getRandomTracks(limit);
+      
+      if (randomTracks && randomTracks.length > 0) {
+        // Преобразуем треки из API в формат нашего приложения
+        setTracks(randomTracks.map(track => ({
+          id: track.id,
+          url: track.url,
+          title: track.title,
+          artist: track.artist,
+          artwork_url: track.artwork_url
+        })));
+      }
+    } catch (error) {
+      console.error('Ошибка при загрузке треков:', error);
+      // В случае ошибки загружаем резервные треки
+      setTracks([
+        {
+          url: 'https://soundcloud.com/g59/self-inflicted',
+          title: '$uicideboy$ - Self Inflicted',
+          artist: '$uicideboy$'
+        },
+        {
+          url: 'https://soundcloud.com/djzrx/taku-hardstyle',
+          title: 'Taku Hardstyle',
+          artist: 'DJZRX'
+        },
+        // Другие резервные треки...
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Добавляем интервал для активного опроса позиции воспроизведения
   useEffect(() => {
@@ -581,6 +634,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     trackDurations,
     trackLoading,
     playingStates,
+    loading,
     
     // Методы
     playTrack,
@@ -605,6 +659,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setTracks,
     formatTime,
     getDefaultArtwork,
+    fetchRandomTracks
   };
   
   return (
