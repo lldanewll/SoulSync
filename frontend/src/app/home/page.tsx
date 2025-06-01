@@ -7,6 +7,7 @@ import { MusicPlayerProvider } from '@/context/MusicPlayerContext';
 import SoundCloudPlayer from '@/components/SoundCloudPlayer';
 import FlowButton from '@/components/FlowButton';
 import FloatingPlayer from '@/components/FloatingPlayer';
+import { useAuth } from '@/context/AuthContext';
 
 // Данные о треках SoundCloud
 const tracks = [
@@ -75,29 +76,25 @@ export default function Home() {
 const HomePage = () => {
   const [typedText, setTypedText] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [username, setUsername] = useState("");
   const fullText = "Музыкальный плеер потоковой музыки от Новикова Даниила ЭФБО-03-23";
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { setTracks } = useMusicPlayer();
+  const { user, logout, isAuthenticated } = useAuth();
 
-  // Загружаем имя пользователя из localStorage после инициализации компонента
+  // Проверяем авторизацию при загрузке
   useEffect(() => {
-    setUsername(localStorage.getItem('username') || "Гость");
-    
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
+
+  // Загружаем треки после инициализации компонента
+  useEffect(() => {
     // Устанавливаем треки в контекст плеера
     setTracks(tracks);
   }, [setTracks]);
-
-  // useEffect(() => {
-  //   if (typedText.length < fullText.length) {
-  //     const timeout = setTimeout(() => {
-  //       setTypedText(fullText.slice(0, typedText.length + 1));
-  //     }, 60);
-  //     return () => clearTimeout(timeout);
-  //   }
-  // }, [typedText, fullText, isDrawerOpen]);
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -118,7 +115,7 @@ const HomePage = () => {
   };
 
   const handleLogout = () => {
-    router.push('/');
+    logout();
   };
 
   return (
@@ -152,7 +149,7 @@ const HomePage = () => {
                 className="w-16 h-16 rounded-full object-cover mb-4"
               />
               <p className={`text-center mt-2 ${theme === 'dark' ? 'text-[var(--lilwhite)]' : 'text-white'}`}>
-                {username}
+                {user?.username || "Гость"}
               </p>
             </div>
             <button onClick={() => router.push('/profile')} className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">Мой профиль</button>

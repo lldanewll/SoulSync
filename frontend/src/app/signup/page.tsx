@@ -1,22 +1,35 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const SignupPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const router = useRouter();
+  const { register, error: authError, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Проверка на заполнение полей
     if (!username || !password) {
-      setError("Введите никнейм и пароль");
+      setPasswordError("Введите никнейм и пароль");
       return;
     }
-    setError("");
-    // Фейковая регистрация
-    router.push('/home');
+    
+    // Проверка на совпадение паролей
+    if (password !== confirmPassword) {
+      setPasswordError("Пароли не совпадают");
+      return;
+    }
+    
+    setPasswordError("");
+    
+    // Используем функцию register из контекста аутентификации
+    await register(username, password);
   };
 
   return (
@@ -30,6 +43,7 @@ const SignupPage = () => {
             className="px-5 py-3 rounded bg-[var(--lilgray)] text-[var(--lilwhite)] text-lg"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            disabled={isLoading}
           />
           <input
             type="password"
@@ -37,9 +51,28 @@ const SignupPage = () => {
             className="px-5 py-3 rounded bg-[var(--lilgray)] text-[var(--lilwhite)] text-lg"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            disabled={isLoading}
           />
-          {error && <div className="text-red-400 text-lg">{error}</div>}
-          <button type="submit" className="bg-red-500 text-white px-5 py-3 rounded-xl text-lg">Зарегистрироваться</button>
+          <input
+            type="password"
+            placeholder="Подтвердите пароль"
+            className="px-5 py-3 rounded bg-[var(--lilgray)] text-[var(--lilwhite)] text-lg"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
+            disabled={isLoading}
+          />
+          {passwordError && <div className="text-red-400 text-lg">{passwordError}</div>}
+          {authError && <div className="text-red-400 text-lg">{authError}</div>}
+          <button 
+            type="submit" 
+            className="bg-red-500 text-white px-5 py-3 rounded-xl text-lg hover:bg-red-600 transition"
+            disabled={isLoading}
+          >
+            {isLoading ? "Загрузка..." : "Зарегистрироваться"}
+          </button>
+          <div className="text-[var(--lilwhite)] text-center mt-4">
+            Уже есть аккаунт? <a href="/login" className="text-red-500 hover:underline">Войти</a>
+          </div>
         </form>
       </div>
     </div>

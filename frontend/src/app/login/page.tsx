@@ -1,23 +1,22 @@
 "use client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const router = useRouter();
+  const { login, error: authError, isLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setError("Введите никнейм и пароль");
       return;
     }
-    setError("");
-    // Фейковая авторизация
-    localStorage.setItem('username', username);  // Сохранение username
-    router.push('/home');
+    
+    // Используем функцию login из контекста аутентификации
+    await login(username, password);
   };
 
   return (
@@ -31,6 +30,7 @@ const LoginPage = () => {
             className="px-5 py-3 rounded bg-[var(--lilgray)] text-[var(--lilwhite)] text-lg"
             value={username}
             onChange={e => setUsername(e.target.value)}
+            disabled={isLoading}
           />
           <input
             type="password"
@@ -38,9 +38,19 @@ const LoginPage = () => {
             className="px-5 py-3 rounded bg-[var(--lilgray)] text-[var(--lilwhite)] text-lg"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            disabled={isLoading}
           />
-          {error && <div className="text-red-400 text-lg">{error}</div>}
-          <button type="submit" className="bg-red-500 text-white px-5 py-3 rounded-xl text-lg">Войти</button>
+          {authError && <div className="text-red-400 text-lg">{authError}</div>}
+          <button 
+            type="submit" 
+            className="bg-red-500 text-white px-5 py-3 rounded-xl text-lg hover:bg-red-600 transition"
+            disabled={isLoading}
+          >
+            {isLoading ? "Загрузка..." : "Войти"}
+          </button>
+          <div className="text-[var(--lilwhite)] text-center mt-4">
+            Нет аккаунта? <a href="/signup" className="text-red-500 hover:underline">Регистрация</a>
+          </div>
         </form>
       </div>
     </div>

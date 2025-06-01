@@ -4,18 +4,23 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/components/ThemeProvider';
+import { useAuth } from '@/context/AuthContext';
 
 const ProfilePage = () => {
   const router = useRouter();
-  const [username, setUsername] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
+  const { user, logout, isAuthenticated } = useAuth();
+
+  // Редирект неавторизованных пользователей
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
 
   useEffect(() => {
-    const storedUsername = localStorage.getItem('username') || 'Гость';
-    setUsername(storedUsername);
-
     if (isDrawerOpen) {
       const handleClickOutside = (event: MouseEvent) => {
         if (drawerRef.current && !drawerRef.current.contains(event.target as Node)) {
@@ -30,9 +35,17 @@ const ProfilePage = () => {
   }, [isDrawerOpen]);
 
   const handleLogout = () => {
-    localStorage.removeItem('username');
-    router.push('/');
+    logout();
   };
+
+  // Если пользователь не авторизован и происходит проверка, показываем загрузку
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--lilgray)]">
+        <div className="text-[var(--lilwhite)] text-xl">Загрузка...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen flex flex-col ${theme === 'dark' ? 'bg-[var(--lilgray)]' : 'bg-gray-100 text-black'}`}>
@@ -59,11 +72,11 @@ const ProfilePage = () => {
             <div className="flex justify-center mb-6 items-center flex-col">
                <img
                 src="/logo.jpg"
-                alt={username}
+                alt={user.username}
                 className="w-16 h-16 rounded-full object-cover mb-4"
               />
               <p className={`text-center mt-2 ${theme === 'dark' ? 'text-[var(--lilwhite)]' : 'text-white'}`}>
-                {username}
+                {user.username}
               </p>
             </div>
             <button onClick={() => router.push('/home')} className="bg-[var(--lilgray)] px-4 py-2 rounded-xl mb-2 text-[var(--lilwhite)] hover:bg-gray-700">На главную</button>
@@ -86,10 +99,24 @@ const ProfilePage = () => {
       )}
 
       <main className="flex-grow flex flex-col items-center justify-center p-6">
-        <h1 className="text-[var(--lilwhite)] text-3xl font-bold mb-4">Профиль</h1>
-        <p className="text-[var(--lilwhite)] text-xl">Никнейм: {username}</p>
-        {/* Можно добавить больше контента позже */}
-        {/* Кнопка назад убрана, так как есть навигация через хедер и drawer */}
+        <h1 className="text-[var(--lilwhite)] text-3xl font-bold mb-8">Профиль пользователя</h1>
+        
+        <div className="bg-black bg-opacity-80 p-8 rounded-xl shadow-xl w-full max-w-md">
+          <div className="flex flex-col items-center mb-6">
+            <img
+              src="/logo.jpg"
+              alt={user.username}
+              className="w-24 h-24 rounded-full object-cover mb-4"
+            />
+            <h2 className="text-[var(--lilwhite)] text-2xl font-bold">{user.username}</h2>
+          </div>
+          
+          <div className="text-[var(--lilwhite)] space-y-4">
+            <p><span className="font-bold">ID:</span> {user.id}</p>
+            <p><span className="font-bold">Дата регистрации:</span> {new Date(user.created_at).toLocaleDateString('ru-RU')}</p>
+            <p><span className="font-bold">Статус:</span> {user.is_active ? 'Активен' : 'Неактивен'}</p>
+          </div>
+        </div>
       </main>
 
       {/* Footer */}
