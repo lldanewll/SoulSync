@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, DateTime, func
+from sqlalchemy import Column, ForeignKey, DateTime, func, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
@@ -12,6 +12,7 @@ class Like(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     track_id = Column(UUID(as_uuid=True), ForeignKey("tracks.id"))
     created_at = Column(DateTime, default=func.now())
+    artwork_url = Column(String, nullable=True)  # URL обложки трека
     
     # Связи
     user = relationship("User", back_populates="likes")

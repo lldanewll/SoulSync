@@ -1,6 +1,8 @@
 "use client";
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { Track as ApiTrack, TrackService } from '@/services/tracks';
+import { LikeService } from '@/services/likes';
+import { useAuth } from './AuthContext';
 
 // Интерфейс для описания трека
 export interface Track {
@@ -30,6 +32,7 @@ interface MusicPlayerContextProps {
   trackLoading: boolean[];
   playingStates: boolean[];
   loading: boolean;
+  isLiked: boolean;
   
   // Методы
   playTrack: (index: number) => void;
@@ -45,6 +48,9 @@ interface MusicPlayerContextProps {
   // Методы потока
   startFlow: () => void;
   stopFlow: () => void;
+  
+  // Методы лайков
+  toggleLike: () => Promise<void>;
   
   // Плееры
   playersRef: React.MutableRefObject<any[]>;
@@ -122,6 +128,8 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isInFlowMode, setIsInFlowMode] = useState(false);
   const [flowHistory, setFlowHistory] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
+  const { isAuthenticated } = useAuth();
   
   // Кэшированные данные
   const [trackArtworks, setTrackArtworks] = useState<string[]>([]);
@@ -186,6 +194,30 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     }
   }, [tracks, apiLoaded]);
+  
+  // Проверка статуса лайка при смене трека
+  useEffect(() => {
+    // При смене трека проверяем, лайкнул ли пользователь этот трек
+    const checkTrackLikeStatus = async () => {
+      if (currentTrackIndex === null || !tracks[currentTrackIndex] || !isAuthenticated) {
+        setIsLiked(false);
+        return;
+      }
+      
+      const track = tracks[currentTrackIndex];
+      if (track.id) {
+        try {
+          const liked = await LikeService.checkLike(track.id);
+          setIsLiked(liked);
+        } catch (error) {
+          console.error("Ошибка проверки статуса лайка:", error);
+          setIsLiked(false);
+        }
+      }
+    };
+    
+    checkTrackLikeStatus();
+  }, [currentTrackIndex, isAuthenticated, tracks]);
   
   // Функция для загрузки случайных треков с сервера
   const fetchRandomTracks = async (limit: number = 20) => {
@@ -617,6 +649,37 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   };
   
+  // Методы лайков
+  
+  // Функция для переключения лайка
+  const toggleLike = async () => {
+    if (!isAuthenticated || currentTrackIndex === null) {
+      return;
+    }
+    
+    const track = tracks[currentTrackIndex];
+    if (!track.id) {
+      console.error("У трека нет ID, нельзя поставить/убрать лайк");
+      return;
+    }
+    
+    try {
+      if (isLiked) {
+        // Если трек уже лайкнут - удаляем лайк
+        await LikeService.unlikeTrack(track.id);
+        setIsLiked(false);
+      } else {
+        // Если трек не лайкнут - добавляем лайк с URL обложки
+        // Используем artwork_url из трека, обложку из кэша или дефолтную обложку
+        const artworkUrl = track.artwork_url || trackArtworks[currentTrackIndex] || getDefaultArtwork(currentTrackIndex);
+        await LikeService.likeTrack(track.id, artworkUrl);
+        setIsLiked(true);
+      }
+    } catch (error) {
+      console.error("Ошибка при изменении статуса лайка:", error);
+    }
+  };
+  
   // Формируем значение контекста
   const value = {
     // Состояние
@@ -635,6 +698,7 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     trackLoading,
     playingStates,
     loading,
+    isLiked,
     
     // Методы
     playTrack,
@@ -650,6 +714,9 @@ export const MusicPlayerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Методы потока
     startFlow,
     stopFlow,
+    
+    // Методы лайков
+    toggleLike,
     
     // Плееры
     playersRef,

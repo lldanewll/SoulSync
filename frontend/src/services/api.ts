@@ -111,6 +111,11 @@ export class ApiService {
       throw new Error(`API Error: ${response.statusText}`);
     }
 
+    // Если статус 204 No Content, возвращаем пустой объект
+    if (response.status === 204) {
+      return {} as T;
+    }
+    
     if (response.headers.get('Content-Type')?.includes('application/json')) {
       return await response.json();
     }
