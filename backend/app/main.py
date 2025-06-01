@@ -12,13 +12,15 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
-# Настройка CORS
+# Настройка CORS - более агрессивно
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # В продакшене укажите конкретные домены
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Разрешаем запросы с любых доменов
+    allow_credentials=False,  # Отключаем проверку credentials
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,  # 24 часа кеширования preflight запросов
 )
 
 # Подключаем API роутеры

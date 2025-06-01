@@ -75,4 +75,37 @@ export class LikeService {
       return false;
     }
   }
+
+  /**
+   * Поиск среди лайкнутых треков
+   */
+  static async searchLikedTracks(query: string, skip: number = 0, limit: number = 20): Promise<Like[]> {
+    try {
+      // Сначала пробуем через ApiService
+      return await ApiService.get<Like[]>(`/likes/search?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`);
+    } catch (error) {
+      console.error('Ошибка при поиске среди лайкнутых треков через ApiService, пробуем прямой fetch:', error);
+      try {
+        // Если не получилось, пробуем прямой fetch с токеном авторизации
+        const accessToken = authService.getAccessToken();
+        const response = await fetch(`${API_URL}/likes/search?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
+          },
+          mode: 'cors'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Ошибка поиска: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (fetchError) {
+        console.error('Ошибка при прямом fetch запросе:', fetchError);
+        return [];
+      }
+    }
+  }
 } 

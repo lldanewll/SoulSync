@@ -74,4 +74,35 @@ export class TrackService {
       return null;
     }
   }
+
+  /**
+   * Поиск треков по названию или автору
+   */
+  static async searchTracks(query: string, skip: number = 0, limit: number = 20): Promise<Track[]> {
+    try {
+      // Сначала пробуем через ApiService
+      return await ApiService.get<Track[]>(`/tracks/search?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`);
+    } catch (error) {
+      console.error('Ошибка при поиске треков через ApiService, пробуем прямой fetch:', error);
+      try {
+        // Если не получилось, пробуем прямой fetch
+        const response = await fetch(`${API_URL}/tracks/search?query=${encodeURIComponent(query)}&skip=${skip}&limit=${limit}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+          mode: 'cors'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Ошибка поиска: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (fetchError) {
+        console.error('Ошибка при прямом fetch запросе:', fetchError);
+        return [];
+      }
+    }
+  }
 } 

@@ -22,7 +22,6 @@ export default function Home() {
 const HomePage = () => {
   const [typedText, setTypedText] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const fullText = "Музыкальный плеер потоковой музыки от Новикова Даниила ЭФБО-03-23";
   const router = useRouter();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { theme, toggleTheme } = useTheme();
@@ -34,6 +33,7 @@ const HomePage = () => {
       router.push('/');
     }
   }, [isAuthenticated, router]);
+
 
   useEffect(() => {
     if (isDrawerOpen) {
@@ -61,11 +61,6 @@ const HomePage = () => {
     <div className={`min-h-screen flex flex-col items-center justify-center overflow-auto ${theme === 'dark' ? 'bg-[var(--lilgray)]' : 'bg-gray-100 text-black'}`}>
       <header className="w-full p-4 flex justify-between items-center bg-black shadow-2xl sticky top-0 z-10">
         <div className="text-red-500 text-2xl">SS</div>
-        <input
-          type="text"
-          placeholder="Поиск..."
-          className="bg-[var(--lilgray)] border border-red-500 rounded-xl px-4 py-2 mx-4 flex-1 max-w-2xl text-[var(--lilwhite)]"
-        />
         <div className="flex space-x-4">
           <button onClick={toggleDrawer} className="w-10 h-10 rounded-full bg-[var(--lilwhite)] flex items-center justify-center shadow-md hover:bg-gray-300 transition">
             <div className="text-black font-bold">👤</div>
@@ -117,7 +112,7 @@ const HomePage = () => {
         {/* Компонент с карточками треков */}
         <SoundCloudPlayer />
         
-        {/* Плавающий плеер */}
+        {/* Плавающий плеер всегда отображается */}
         <FloatingPlayer />
       </main>
       <footer className={`w-full text-center py-4 opacity-80 ${theme === 'dark' ? 'bg-black text-[var(--lilwhite)]' : 'bg-gray-200 text-black'}`}>
@@ -133,10 +128,4 @@ const HomePage = () => {
       </footer>
     </div>
   );
-};
-
-// Функция для импорта useMusicPlayer внутри компонента
-function useMusicPlayer() {
-  const { useMusicPlayer } = require('@/context/MusicPlayerContext');
-  return useMusicPlayer();
-} 
+}; 

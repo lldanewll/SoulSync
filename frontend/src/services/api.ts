@@ -63,63 +63,74 @@ export class ApiService {
     
     const headers = {
       ...options.headers,
+      'Accept': 'application/json',
       ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
     };
 
-    const response = await fetch(`${API_URL}${endpoint}`, {
-      ...options,
-      headers
-    });
+    try {
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        ...options,
+        headers,
+        mode: 'cors', // Явно указываем режим CORS
+        credentials: 'same-origin', // Изменяем на same-origin вместо include
+      });
 
-    // Если получили 401 (Unauthorized), пробуем обновить токен
-    if (response.status === 401) {
-      const refreshToken = authService.getRefreshToken();
-      if (refreshToken) {
-        try {
-          // Пытаемся обновить токен
-          await authService.refreshToken(refreshToken);
-          
-          // Повторяем запрос с новым токеном
-          const newAccessToken = authService.getAccessToken();
-          
-          const retryResponse = await fetch(`${API_URL}${endpoint}`, {
-            ...options,
-            headers: {
-              ...options.headers,
-              'Authorization': `Bearer ${newAccessToken}`
+      // Если получили 401 (Unauthorized), пробуем обновить токен
+      if (response.status === 401) {
+        const refreshToken = authService.getRefreshToken();
+        if (refreshToken) {
+          try {
+            // Пытаемся обновить токен
+            await authService.refreshToken(refreshToken);
+            
+            // Повторяем запрос с новым токеном
+            const newAccessToken = authService.getAccessToken();
+            
+            const retryResponse = await fetch(`${API_URL}${endpoint}`, {
+              ...options,
+              headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${newAccessToken}`,
+                'Accept': 'application/json',
+              },
+              mode: 'cors',
+              credentials: 'same-origin' // Изменяем на same-origin вместо include
+            });
+
+            if (!retryResponse.ok) {
+              throw new Error(`API Error: ${retryResponse.statusText}`);
             }
-          });
 
-          if (!retryResponse.ok) {
-            throw new Error(`API Error: ${retryResponse.statusText}`);
+            return await retryResponse.json();
+          } catch (error) {
+            // Если не удалось обновить токен, выходим из системы
+            authService.logout();
+            throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
           }
-
-          return await retryResponse.json();
-        } catch (error) {
-          // Если не удалось обновить токен, выходим из системы
+        } else {
+          // Нет refresh токена, выходим из системы
           authService.logout();
-          throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
+          throw new Error('Пожалуйста, войдите в систему.');
         }
-      } else {
-        // Нет refresh токена, выходим из системы
-        authService.logout();
-        throw new Error('Пожалуйста, войдите в систему.');
       }
-    }
 
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.statusText}`);
+      }
 
-    // Если статус 204 No Content, возвращаем пустой объект
-    if (response.status === 204) {
+      // Если статус 204 No Content, возвращаем пустой объект
+      if (response.status === 204) {
+        return {} as T;
+      }
+      
+      if (response.headers.get('Content-Type')?.includes('application/json')) {
+        return await response.json();
+      }
+      
       return {} as T;
+    } catch (error) {
+      console.error('Ошибка API запроса:', error);
+      throw error;
     }
-    
-    if (response.headers.get('Content-Type')?.includes('application/json')) {
-      return await response.json();
-    }
-    
-    return {} as T;
   }
 } 
